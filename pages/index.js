@@ -1,65 +1,61 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import Head from 'next/head';
+import { useState } from 'react';
+import ImagesGrid from '../components/ImagesGrid';
 
-export default function Home() {
+export default function Home({ images }) {
+  const [search, setSearch] = useState('');
+  const [searchResult, setSearchResult] = useState(images);
+
   return (
-    <div className={styles.container}>
+    <div className='container'>
       <Head>
         <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel='icon' href='/favicon.ico' />
       </Head>
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      <div>
+        <input
+          type='search'
+          placeholder='search'
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <button
+          onClick={async () => {
+            const res = await fetch(
+              `https://images-api.nasa.gov/search?media_type=image&q=${search}`
+            );
+            const data = await res.json();
+            setSearchResult(await data.collection.items);
+          }}
         >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
+          Search
+        </button>
+      </div>
+
+      <main className='content'>
+        {searchResult &&
+          searchResult.map((el) => (
+            <ImagesGrid
+              key={el.data[0].nasa_id}
+              imageLink={el.links[0].href}
+              imageId={el.data[0].nasa_id}
+            />
+          ))}
+      </main>
     </div>
-  )
+  );
+}
+
+export async function getStaticProps() {
+  const res = await fetch(
+    'https://images-api.nasa.gov/search?media_type=image'
+  );
+  const data = await res.json();
+  const images = await data.collection.items;
+
+  return {
+    props: {
+      images,
+    },
+  };
 }
