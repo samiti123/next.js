@@ -4,7 +4,7 @@ import Link from 'next/link';
 export default function ImagesGrid({ imageLink, imageId }) {
   return (
     <div style={{ margin: '10px ' }}>
-      <Link>
+      <Link as={`/image/`} href='/image/[id]'>
         <a>
           <Image width={350} height={150} objectFit={'cover'} src={imageLink} />
         </a>
